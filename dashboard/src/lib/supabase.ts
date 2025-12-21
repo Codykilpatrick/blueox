@@ -3,24 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-console.log('Supabase config:', { 
-  hasUrl: !!supabaseUrl, 
-  hasKey: !!supabaseAnonKey,
-  url: supabaseUrl?.substring(0, 30) + '...'
-});
-
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables!');
   throw new Error('Missing Supabase environment variables');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-console.log('Supabase client created');
 
-// User roles
 export type UserRole = 'viewer' | 'editor' | 'admin';
 
-// Database types
 export interface Profile {
   id: string;
   email: string;
@@ -44,7 +34,6 @@ export interface Task {
   updated_at: string;
 }
 
-// Permission helpers
 export const canAddJobs = (role: UserRole): boolean => {
   return role === 'editor' || role === 'admin';
 };
@@ -60,4 +49,3 @@ export const canDeleteJobs = (role: UserRole): boolean => {
 export const canManageUsers = (role: UserRole): boolean => {
   return role === 'admin';
 };
-

@@ -19,23 +19,18 @@ export function useAuth() {
     error: null,
   });
 
-  // Initialize auth state
   useEffect(() => {
     let mounted = true;
 
     const fetchProfile = async (userId: string): Promise<Profile> => {
-      console.log('Fetching profile for user:', userId);
-      
-      // Default profile to return if fetch fails
       const defaultProfile: Profile = {
         id: userId,
         email: '',
-        role: 'admin' as UserRole, // Default to admin for now so you can test
+        role: 'viewer' as UserRole,
         created_at: new Date().toISOString(),
       };
       
       try {
-        // Add timeout to profile fetch
         const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) => {
           setTimeout(() => resolve({ data: null, error: new Error('Profile fetch timeout') }), 3000);
         });
@@ -48,22 +43,16 @@ export function useAuth() {
         
         const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
-        console.log('Profile fetch result:', { data, error });
-
         if (error || !data) {
-          console.error('Error fetching profile:', error);
           return defaultProfile;
         }
         return data as Profile;
-      } catch (err) {
-        console.error('Exception fetching profile:', err);
+      } catch {
         return defaultProfile;
       }
     };
 
     const handleAuthChange = async (session: Session | null) => {
-      console.log('handleAuthChange called with session:', !!session);
-      
       if (session?.user) {
         const profile = await fetchProfile(session.user.id);
         if (mounted) {
@@ -88,49 +77,39 @@ export function useAuth() {
       }
     };
 
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        console.log('onAuthStateChange event:', _event);
         await handleAuthChange(session);
       }
     );
 
-    // Then check current session
-    // Use a simpler approach - just check if there's a session in storage
     const checkSession = async () => {
-      console.log('Checking session...');
       try {
         const { data, error } = await supabase.auth.getSession();
-        console.log('getSession result:', { hasSession: !!data.session, error });
         
         if (error) {
-          console.error('getSession error:', error);
           if (mounted) {
             setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
           }
           return;
         }
         
-        // onAuthStateChange should have already handled this, but just in case
         if (mounted && authState.loading) {
           await handleAuthChange(data.session);
         }
-      } catch (err) {
-        console.error('Exception in checkSession:', err);
+      } catch {
         if (mounted) {
           setAuthState({
             user: null,
             profile: null,
             session: null,
             loading: false,
-            error: null, // Don't show error, just show login
+            error: null,
           });
         }
       }
     };
 
-    // Small delay to let onAuthStateChange fire first
     const timer = setTimeout(checkSession, 100);
 
     return () => {
@@ -140,7 +119,6 @@ export function useAuth() {
     };
   }, []);
 
-  // Sign in with email/password
   const signIn = async (email: string, password: string): Promise<boolean> => {
     setAuthState((prev) => ({ ...prev, loading: true, error: null }));
 
@@ -160,8 +138,7 @@ export function useAuth() {
       }
 
       return true;
-    } catch (err) {
-      console.error('Sign in exception:', err);
+    } catch {
       setAuthState((prev) => ({
         ...prev,
         loading: false,
@@ -171,12 +148,11 @@ export function useAuth() {
     }
   };
 
-  // Sign out
   const signOut = async (): Promise<void> => {
     try {
       await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Sign out error:', err);
+    } catch {
+      // Ignore sign out errors
     }
     setAuthState({
       user: null,
@@ -187,7 +163,6 @@ export function useAuth() {
     });
   };
 
-  // Get user role
   const role: UserRole = authState.profile?.role || 'viewer';
 
   return {
