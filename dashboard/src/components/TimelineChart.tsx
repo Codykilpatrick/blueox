@@ -60,10 +60,10 @@ export function TimelineChart({ data }: TimelineChartProps) {
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--border-color)',
               borderRadius: '8px',
-              color: 'var(--text-primary)',
               fontFamily: "'Outfit', sans-serif",
             }}
-            labelStyle={{ color: 'var(--text-secondary)' }}
+            labelStyle={{ color: '#f8fafc' }}
+            itemStyle={{ color: '#f8fafc' }}
           />
           <Area
             type="monotone"

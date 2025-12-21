@@ -55,9 +55,10 @@ export function PhaseChart({ data }: PhaseChartProps) {
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--border-color)',
               borderRadius: '8px',
-              color: 'var(--text-primary)',
               fontFamily: "'Outfit', sans-serif",
             }}
+            labelStyle={{ color: '#f8fafc' }}
+            itemStyle={{ color: '#f8fafc' }}
           />
           <Legend
             wrapperStyle={{

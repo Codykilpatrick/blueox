@@ -61,9 +61,10 @@ export function CrewChart({ data }: CrewChartProps) {
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--border-color)',
               borderRadius: '8px',
-              color: 'var(--text-primary)',
               fontFamily: "'Outfit', sans-serif",
             }}
+            labelStyle={{ color: '#f8fafc' }}
+            itemStyle={{ color: '#f8fafc' }}
             formatter={(value) => [`${value} weeks`, 'Workload']}
           />
           <Bar dataKey="weeks" radius={[0, 6, 6, 0]}>
