@@ -13,6 +13,21 @@ export interface TaskInput {
   end_date?: string;
 }
 
+// Helper to clean task data - convert empty strings to null for database
+function cleanTaskData(task: TaskInput): Record<string, unknown> {
+  return {
+    sheet: task.sheet || null,
+    job: task.job,
+    phase: task.phase?.trim() || null,
+    crew: task.crew?.trim() || null,
+    description: task.description?.trim() || null,
+    status: task.status || 'S',
+    weeks: task.weeks || null,
+    start_date: task.start_date?.trim() || null,
+    end_date: task.end_date?.trim() || null,
+  };
+}
+
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,11 +67,12 @@ export function useTasks() {
   // Add a new task
   const addTask = async (task: TaskInput): Promise<boolean> => {
     const { data: userData } = await supabase.auth.getUser();
+    const cleanedData = cleanTaskData(task);
     
     const { error: insertError } = await supabase
       .from('tasks')
       .insert({
-        ...task,
+        ...cleanedData,
         created_by: userData.user?.id,
       });
 
@@ -72,10 +88,20 @@ export function useTasks() {
 
   // Update a task
   const updateTask = async (id: number, updates: Partial<TaskInput>): Promise<boolean> => {
+    // Clean empty strings to null for database
+    const cleanedUpdates: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (typeof value === 'string') {
+        cleanedUpdates[key] = value.trim() || null;
+      } else {
+        cleanedUpdates[key] = value ?? null;
+      }
+    }
+    
     const { error: updateError } = await supabase
       .from('tasks')
       .update({
-        ...updates,
+        ...cleanedUpdates,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id);
