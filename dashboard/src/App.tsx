@@ -8,6 +8,9 @@ import { StatCard } from './components/StatCard';
 import { PhaseChart } from './components/PhaseChart';
 import { TimelineChart } from './components/TimelineChart';
 import { CrewChart } from './components/CrewChart';
+import { StatusChart } from './components/StatusChart';
+import { ProgressChart } from './components/ProgressChart';
+import { UpcomingDeadlines } from './components/UpcomingDeadlines';
 import { TaskTable } from './components/TaskTable';
 import { Login } from './components/Login';
 import { JobModal } from './components/JobModal';
@@ -20,6 +23,7 @@ function computeStats(tasks: Task[]) {
   
   const statusCounts: Record<string, number> = {};
   const phaseCounts: Record<string, number> = {};
+  const phaseDoneCounts: Record<string, number> = {};
   const crewWorkload: Record<string, number> = {};
   const monthlyTasks: Record<string, number> = {};
 
@@ -29,6 +33,11 @@ function computeStats(tasks: Task[]) {
 
     const phase = task.sheet;
     phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
+    
+    // Track done tasks per phase
+    if (task.status === 'D') {
+      phaseDoneCounts[phase] = (phaseDoneCounts[phase] || 0) + 1;
+    }
 
     if (task.crew && task.crew !== 'Unassigned' && task.weeks) {
       crewWorkload[task.crew] = (crewWorkload[task.crew] || 0) + task.weeks;
@@ -53,13 +62,14 @@ function computeStats(tasks: Task[]) {
     doneTasks,
     statusCounts,
     phaseCounts,
+    phaseDoneCounts,
     crewWorkload,
     monthlyTasks,
   };
 }
 
 
-function computeChartData(stats: ReturnType<typeof computeStats>) {
+function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[]) {
   const phaseData = Object.entries(stats.phaseCounts).map(([name, value]) => ({
     name,
     value,
@@ -81,7 +91,43 @@ function computeChartData(stats: ReturnType<typeof computeStats>) {
       count,
     }));
 
-  return { phaseData, crewData, monthlyData };
+  // Phase progress data
+  const phaseProgressData = Object.entries(stats.phaseCounts)
+    .map(([name, total]) => {
+      const done = stats.phaseDoneCounts[name] || 0;
+      return {
+        name,
+        total,
+        done,
+        percentage: total > 0 ? Math.round((done / total) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+
+  // Upcoming deadlines (tasks ending within 14 days that aren't done)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingTasks = tasks
+    .filter((t) => t.end_date && t.status !== 'D')
+    .map((t) => {
+      const endDate = new Date(t.end_date!);
+      endDate.setHours(0, 0, 0, 0);
+      const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        id: t.id,
+        job: t.job || 'Unnamed Task',
+        end_date: t.end_date!,
+        daysLeft,
+        crew: t.crew,
+        phase: t.sheet,
+      };
+    })
+    .filter((t) => t.daysLeft <= 14)
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+    .slice(0, 8);
+
+  return { phaseData, crewData, monthlyData, phaseProgressData, upcomingTasks };
 }
 
 function App() {
@@ -128,7 +174,7 @@ function App() {
 
   // Compute stats and chart data from tasks
   const stats = tasks.length > 0 ? computeStats(tasks) : null;
-  const chartData = stats ? computeChartData(stats) : null;
+  const chartData = stats ? computeChartData(stats, tasks) : null;
 
   const handleAddJob = () => {
     setEditingTask(null);
@@ -346,10 +392,20 @@ function App() {
 
             {/* Charts Section */}
             <section className="charts-section">
+              {/* Row 1: Status Distribution, Phase Progress, Upcoming Deadlines */}
+              <div className="charts-row-triple">
+                <StatusChart data={stats.statusCounts} />
+                <ProgressChart data={chartData.phaseProgressData} />
+                <UpcomingDeadlines tasks={chartData.upcomingTasks} />
+              </div>
+              
+              {/* Row 2: Phase Pie Chart, Timeline */}
               <div className="charts-row">
                 <PhaseChart data={chartData.phaseData} />
                 <TimelineChart data={chartData.monthlyData} />
               </div>
+              
+              {/* Row 3: Crew Workload */}
               <div className="charts-row-single">
                 <CrewChart data={chartData.crewData} />
               </div>
