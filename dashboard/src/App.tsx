@@ -91,15 +91,21 @@ function App() {
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
+  // Debug logging
+  console.log('App state:', { authLoading, isAuthenticated, tasksLoading, initialized, tasksCount: tasks.length });
+
   // Fetch tasks when authenticated
   useEffect(() => {
     if (isAuthenticated && !initialized) {
+      console.log('Fetching tasks...');
       fetchTasks();
     }
   }, [isAuthenticated, initialized, fetchTasks]);
 
   // Show loading while checking auth
   if (authLoading) {
+    console.log('Showing auth loading spinner');
+    
     return (
       <div style={{
         display: 'flex',
