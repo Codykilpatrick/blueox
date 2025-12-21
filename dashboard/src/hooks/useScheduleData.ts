@@ -81,7 +81,7 @@ export function useScheduleData() {
     const phaseData = Object.entries(stats.phaseCounts).map(([name, value]) => ({
       name,
       value,
-    }));
+    } as { name: string; value: number; [key: string]: string | number }));
 
     const statusData = Object.entries(stats.statusCounts).map(([code, value]) => ({
       name: STATUS_LABELS[code] || code,

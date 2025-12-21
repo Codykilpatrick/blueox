@@ -64,7 +64,7 @@ export function CrewChart({ data }: CrewChartProps) {
               color: 'var(--text-primary)',
               fontFamily: "'Outfit', sans-serif",
             }}
-            formatter={(value: number) => [`${value} weeks`, 'Workload']}
+            formatter={(value) => [`${value} weeks`, 'Workload']}
           />
           <Bar dataKey="weeks" radius={[0, 6, 6, 0]}>
             {data.map((_, index) => (

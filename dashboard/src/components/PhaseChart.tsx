@@ -1,14 +1,9 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
-interface PhaseData {
-  name: string;
-  value: number;
-}
-
 const COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#22d3ee', '#f472b6'];
 
 interface PhaseChartProps {
-  data: PhaseData[];
+  data: Array<{ name: string; value: number; [key: string]: string | number }>;
 }
 
 export function PhaseChart({ data }: PhaseChartProps) {
