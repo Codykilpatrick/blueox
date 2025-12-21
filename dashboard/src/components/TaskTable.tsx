@@ -1,13 +1,21 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react';
 import type { TaskRecord } from '../types';
 import { StatusBadge } from './StatusBadge';
 
-interface TaskTableProps {
-  data: TaskRecord[];
+interface ExtendedTaskRecord extends TaskRecord {
+  id?: number;
 }
 
-export function TaskTable({ data }: TaskTableProps) {
+interface TaskTableProps {
+  data: ExtendedTaskRecord[];
+  canEdit?: boolean;
+  canDelete?: boolean;
+  onEdit?: (id: number) => void;
+  onDelete?: (id: number) => void;
+}
+
+export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTableProps) {
   const [search, setSearch] = useState('');
   const [phaseFilter, setPhaseFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -254,6 +262,9 @@ export function TaskTable({ data }: TaskTableProps) {
                 </div>
               </th>
               <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>End Date</th>
+              {(canEdit || canDelete) && (
+                <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -289,6 +300,50 @@ export function TaskTable({ data }: TaskTableProps) {
                 <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
                   {formatDate(task.end)}
                 </td>
+                {(canEdit || canDelete) && (
+                  <td style={{ padding: '12px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      {canEdit && task.id && (
+                        <button
+                          onClick={() => onEdit?.(task.id!)}
+                          style={{
+                            background: 'rgba(56, 189, 248, 0.1)',
+                            border: '1px solid rgba(56, 189, 248, 0.3)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            color: '#38bdf8',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                      {canDelete && task.id && (
+                        <button
+                          onClick={() => onDelete?.(task.id!)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

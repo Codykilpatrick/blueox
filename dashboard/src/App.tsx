@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Briefcase, Users, Calendar, Clock, CheckCircle, Activity, HardHat, LogOut, Plus, Shield } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
-import { canAddJobs } from './lib/supabase';
+import { canAddJobs, canEditJobs, canDeleteJobs } from './lib/supabase';
 import type { Task } from './lib/supabase';
 import { StatCard } from './components/StatCard';
 import { PhaseChart } from './components/PhaseChart';
@@ -86,7 +86,7 @@ function computeChartData(stats: ReturnType<typeof computeStats>) {
 
 function App() {
   const { user, role, loading: authLoading, error: authError, signIn, signOut, isAuthenticated } = useAuth();
-  const { tasks, loading: tasksLoading, initialized, fetchTasks, addTask, updateTask } = useTasks();
+  const { tasks, loading: tasksLoading, initialized, fetchTasks, addTask, updateTask, deleteTask } = useTasks();
   
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -134,6 +134,11 @@ function App() {
     setJobModalOpen(true);
   };
 
+  const handleEditJob = (task: Task) => {
+    setEditingTask(task);
+    setJobModalOpen(true);
+  };
+
   const handleSaveJob = async (taskData: Parameters<typeof addTask>[0]) => {
     if (editingTask) {
       return await updateTask(editingTask.id, taskData);
@@ -142,8 +147,15 @@ function App() {
     }
   };
 
-  // Convert Task[] to the format TaskTable expects
+  const handleDeleteJob = async (taskId: number) => {
+    if (confirm('Are you sure you want to delete this task?')) {
+      await deleteTask(taskId);
+    }
+  };
+
+  // Convert Task[] to the format TaskTable expects (with id for actions)
   const tableData = tasks.map((t) => ({
+    id: t.id,
     sheet: t.sheet,
     job: t.job,
     phase: t.phase,
@@ -344,7 +356,16 @@ function App() {
 
             {/* Task Table */}
             <section className="table-section">
-              <TaskTable data={tableData} />
+              <TaskTable 
+                data={tableData} 
+                canEdit={canEditJobs(role)}
+                canDelete={canDeleteJobs(role)}
+                onEdit={(id) => {
+                  const task = tasks.find(t => t.id === id);
+                  if (task) handleEditJob(task);
+                }}
+                onDelete={handleDeleteJob}
+              />
             </section>
           </>
         ) : (
