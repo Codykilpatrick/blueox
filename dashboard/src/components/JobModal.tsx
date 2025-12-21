@@ -76,6 +76,16 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
       setError('Job name is required');
       return;
     }
+    
+    if (!formData.start_date) {
+      setError('Start date is required');
+      return;
+    }
+    
+    if (!formData.end_date) {
+      setError('End date is required');
+      return;
+    }
 
     setLoading(true);
     const success = await onSave(formData);
@@ -264,23 +274,25 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
 
             {/* Start Date */}
             <div>
-              <label style={labelStyle}>Start Date</label>
+              <label style={labelStyle}>Start Date *</label>
               <input
                 type="date"
                 value={formData.start_date}
                 onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                 style={inputStyle}
+                required
               />
             </div>
 
             {/* End Date */}
             <div>
-              <label style={labelStyle}>End Date</label>
+              <label style={labelStyle}>End Date *</label>
               <input
                 type="date"
                 value={formData.end_date}
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                 style={inputStyle}
+                required
               />
             </div>
           </div>
