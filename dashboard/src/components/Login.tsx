@@ -1,35 +1,37 @@
 import { useState } from 'react';
-import { HardHat, Lock, User, AlertCircle } from 'lucide-react';
-
-// Hardcoded credentials - change these!
-const VALID_USERNAME = 'blueox';
-const VALID_PASSWORD = 'schedule2025';
+import { HardHat, Lock, Mail, AlertCircle } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (email: string, password: string) => Promise<boolean>;
+  error?: string | null;
+  loading?: boolean;
 }
 
-export function Login({ onLogin }: LoginProps) {
-  const [username, setUsername] = useState('');
+export function Login({ onLogin, error: externalError, loading: externalLoading }: LoginProps) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const error = externalError || localError;
+  const loading = externalLoading || isLoading;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setLocalError('');
     setIsLoading(true);
 
-    // Simulate a slight delay for UX
-    setTimeout(() => {
-      if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-        localStorage.setItem('blueox_auth', 'true');
-        onLogin();
-      } else {
-        setError('Invalid username or password');
-        setIsLoading(false);
-      }
-    }, 500);
+    if (!email || !password) {
+      setLocalError('Please enter both email and password');
+      setIsLoading(false);
+      return;
+    }
+
+    const success = await onLogin(email, password);
+    
+    if (!success) {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -161,10 +163,10 @@ export function Login({ onLogin }: LoginProps) {
                   marginBottom: '8px',
                 }}
               >
-                Username
+                Email
               </label>
               <div style={{ position: 'relative' }}>
-                <User
+                <Mail
                   size={18}
                   style={{
                     position: 'absolute',
@@ -175,10 +177,10 @@ export function Login({ onLogin }: LoginProps) {
                   }}
                 />
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   style={{
                     width: '100%',
                     padding: '14px 14px 14px 44px',
@@ -245,11 +247,11 @@ export function Login({ onLogin }: LoginProps) {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               style={{
                 width: '100%',
                 padding: '14px',
-                background: isLoading
+                background: loading
                   ? 'var(--bg-tertiary)'
                   : 'linear-gradient(135deg, var(--accent-blue), var(--accent-violet))',
                 border: 'none',
@@ -257,12 +259,12 @@ export function Login({ onLogin }: LoginProps) {
                 color: 'white',
                 fontSize: '1rem',
                 fontWeight: 600,
-                cursor: isLoading ? 'not-allowed' : 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                boxShadow: isLoading ? 'none' : '0 4px 20px rgba(56, 189, 248, 0.3)',
+                boxShadow: loading ? 'none' : '0 4px 20px rgba(56, 189, 248, 0.3)',
               }}
               onMouseEnter={(e) => {
-                if (!isLoading) {
+                if (!loading) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 6px 24px rgba(56, 189, 248, 0.4)';
                 }
@@ -272,7 +274,7 @@ export function Login({ onLogin }: LoginProps) {
                 e.currentTarget.style.boxShadow = '0 4px 20px rgba(56, 189, 248, 0.3)';
               }}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>
@@ -291,4 +293,3 @@ export function Login({ onLogin }: LoginProps) {
     </div>
   );
 }
-

@@ -1,35 +1,105 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Users, Calendar, Clock, CheckCircle, Activity, HardHat, LogOut } from 'lucide-react';
-import { useScheduleData } from './hooks/useScheduleData';
+import { Briefcase, Users, Calendar, Clock, CheckCircle, Activity, HardHat, LogOut, Plus, Shield } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
+import { useTasks } from './hooks/useTasks';
+import { canAddJobs } from './lib/supabase';
+import type { Task } from './lib/supabase';
 import { StatCard } from './components/StatCard';
 import { PhaseChart } from './components/PhaseChart';
 import { TimelineChart } from './components/TimelineChart';
 import { CrewChart } from './components/CrewChart';
 import { TaskTable } from './components/TaskTable';
 import { Login } from './components/Login';
+import { JobModal } from './components/JobModal';
 import './App.css';
 
+// Helper to compute stats from tasks
+function computeStats(tasks: Task[]) {
+  const uniqueJobs = new Set(tasks.map((d) => d.job).filter(Boolean));
+  const uniqueCrews = new Set(tasks.map((d) => d.crew).filter((c) => c && c !== 'Unassigned'));
+  
+  const statusCounts: Record<string, number> = {};
+  const phaseCounts: Record<string, number> = {};
+  const crewWorkload: Record<string, number> = {};
+  const monthlyTasks: Record<string, number> = {};
+
+  tasks.forEach((task) => {
+    const status = task.status || 'Unknown';
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+
+    const phase = task.sheet;
+    phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
+
+    if (task.crew && task.crew !== 'Unassigned' && task.weeks) {
+      crewWorkload[task.crew] = (crewWorkload[task.crew] || 0) + task.weeks;
+    }
+
+    if (task.start_date) {
+      const month = task.start_date.slice(0, 7);
+      monthlyTasks[month] = (monthlyTasks[month] || 0) + 1;
+    }
+  });
+
+  const totalWeeks = tasks.reduce((sum, t) => sum + (t.weeks || 0), 0);
+  const activeTasks = tasks.filter((t) => t.status === 'A').length;
+  const doneTasks = tasks.filter((t) => t.status === 'D').length;
+
+  return {
+    totalTasks: tasks.length,
+    totalJobs: uniqueJobs.size,
+    totalCrews: uniqueCrews.size,
+    totalWeeks: Math.round(totalWeeks),
+    activeTasks,
+    doneTasks,
+    statusCounts,
+    phaseCounts,
+    crewWorkload,
+    monthlyTasks,
+  };
+}
+
+
+function computeChartData(stats: ReturnType<typeof computeStats>) {
+  const phaseData = Object.entries(stats.phaseCounts).map(([name, value]) => ({
+    name,
+    value,
+  } as { name: string; value: number; [key: string]: string | number }));
+
+  const crewData = Object.entries(stats.crewWorkload)
+    .map(([name, weeks]) => ({
+      name,
+      weeks: Math.round(weeks * 10) / 10,
+    }))
+    .sort((a, b) => b.weeks - a.weeks)
+    .slice(0, 10);
+
+  const monthlyData = Object.entries(stats.monthlyTasks)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, count]) => ({
+      month,
+      label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+      count,
+    }));
+
+  return { phaseData, crewData, monthlyData };
+}
+
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const { data, loading, error, stats, chartData } = useScheduleData();
+  const { user, role, loading: authLoading, error: authError, signIn, signOut, isAuthenticated } = useAuth();
+  const { tasks, loading: tasksLoading, initialized, fetchTasks, addTask, updateTask } = useTasks();
+  
+  const [jobModalOpen, setJobModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Check for existing auth on mount
+  // Fetch tasks when authenticated
   useEffect(() => {
-    const auth = localStorage.getItem('blueox_auth');
-    setIsAuthenticated(auth === 'true');
-  }, []);
+    if (isAuthenticated && !initialized) {
+      fetchTasks();
+    }
+  }, [isAuthenticated, initialized, fetchTasks]);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('blueox_auth');
-    setIsAuthenticated(false);
-  };
-
-  // Show nothing while checking auth
-  if (isAuthenticated === null) {
+  // Show loading while checking auth
+  if (authLoading) {
     return (
       <div style={{
         display: 'flex',
@@ -52,67 +122,46 @@ function App() {
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={signIn} error={authError} />;
   }
 
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: '20px',
-        color: '#94a3b8',
-        background: '#0a0f1a',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '3px solid #1e3a5f',
-          borderTopColor: '#38bdf8',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
-        <p>Loading schedule data...</p>
-      </div>
-    );
-  }
+  // Compute stats and chart data from tasks
+  const stats = tasks.length > 0 ? computeStats(tasks) : null;
+  const chartData = stats ? computeChartData(stats) : null;
 
-  if (error) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: '20px',
-        color: '#fb7185',
-        background: '#0a0f1a',
-      }}>
-        <p>Error loading data: {error}</p>
-      </div>
-    );
-  }
+  const handleAddJob = () => {
+    setEditingTask(null);
+    setJobModalOpen(true);
+  };
 
-  if (!stats || !chartData) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: '20px',
-        color: '#94a3b8',
-        background: '#0a0f1a',
-      }}>
-        <p>No data available</p>
-      </div>
-    );
-  }
+  const handleSaveJob = async (taskData: Parameters<typeof addTask>[0]) => {
+    if (editingTask) {
+      return await updateTask(editingTask.id, taskData);
+    } else {
+      return await addTask(taskData);
+    }
+  };
+
+  // Convert Task[] to the format TaskTable expects
+  const tableData = tasks.map((t) => ({
+    sheet: t.sheet,
+    job: t.job,
+    phase: t.phase,
+    crew: t.crew,
+    description: t.description,
+    status: t.status,
+    weeks: t.weeks,
+    start: t.start_date,
+    end: t.end_date,
+  }));
+
+  const getRoleBadgeColor = () => {
+    switch (role) {
+      case 'admin': return '#ef4444';
+      case 'editor': return '#f59e0b';
+      default: return '#6b7280';
+    }
+  };
 
   return (
     <div className="dashboard">
@@ -133,15 +182,60 @@ function App() {
             </div>
           </div>
           <div className="header-meta">
+            {/* Role Badge */}
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: `${getRoleBadgeColor()}20`,
+                border: `1px solid ${getRoleBadgeColor()}40`,
+                borderRadius: '20px',
+                color: getRoleBadgeColor(),
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+              }}
+            >
+              <Shield size={14} />
+              {role}
+            </span>
+            
             <span className="update-badge">
               <Activity size={14} />
               Live Data
             </span>
+            
             <span className="date-display">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
+            
+            {/* Add Job Button (for editor/admin) */}
+            {canAddJobs(role) && (
+              <button
+                onClick={handleAddJob}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-violet))',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                <Plus size={16} />
+                Add Job
+              </button>
+            )}
+            
             <button
-              onClick={handleLogout}
+              onClick={signOut}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -172,79 +266,107 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Stats Grid */}
-        <section className="stats-grid">
-          <StatCard
-            title="Total Jobs"
-            value={stats.totalJobs}
-            subtitle="Active projects"
-            icon={Briefcase}
-            color="#38bdf8"
-            delay={1}
-          />
-          <StatCard
-            title="Total Tasks"
-            value={stats.totalTasks}
-            subtitle="Across all phases"
-            icon={Calendar}
-            color="#a78bfa"
-            delay={2}
-          />
-          <StatCard
-            title="Active Crews"
-            value={stats.totalCrews}
-            subtitle="Assigned personnel"
-            icon={Users}
-            color="#34d399"
-            delay={3}
-          />
-          <StatCard
-            title="Total Work"
-            value={`${stats.totalWeeks}`}
-            subtitle="Weeks scheduled"
-            icon={Clock}
-            color="#fbbf24"
-            delay={4}
-          />
-          <StatCard
-            title="Active Tasks"
-            value={stats.activeTasks}
-            subtitle="Currently in progress"
-            icon={Activity}
-            color="#22d3ee"
-            delay={5}
-          />
-          <StatCard
-            title="Completed"
-            value={stats.doneTasks}
-            subtitle="Tasks finished"
-            icon={CheckCircle}
-            color="#4ade80"
-            delay={6}
-          />
-        </section>
-
-        {/* Charts Section */}
-        <section className="charts-section">
-          <div className="charts-row">
-            <PhaseChart data={chartData.phaseData} />
-            <TimelineChart data={chartData.monthlyData} />
+        {(tasksLoading || !initialized) ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: '3px solid #1e3a5f',
+              borderTopColor: '#38bdf8',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }} />
           </div>
-          <div className="charts-row-single">
-            <CrewChart data={chartData.crewData} />
-          </div>
-        </section>
+        ) : stats && chartData ? (
+          <>
+            {/* Stats Grid */}
+            <section className="stats-grid">
+              <StatCard
+                title="Total Jobs"
+                value={stats.totalJobs}
+                subtitle="Active projects"
+                icon={Briefcase}
+                color="#38bdf8"
+                delay={1}
+              />
+              <StatCard
+                title="Total Tasks"
+                value={stats.totalTasks}
+                subtitle="Across all phases"
+                icon={Calendar}
+                color="#a78bfa"
+                delay={2}
+              />
+              <StatCard
+                title="Active Crews"
+                value={stats.totalCrews}
+                subtitle="Assigned personnel"
+                icon={Users}
+                color="#34d399"
+                delay={3}
+              />
+              <StatCard
+                title="Total Work"
+                value={`${stats.totalWeeks}`}
+                subtitle="Weeks scheduled"
+                icon={Clock}
+                color="#fbbf24"
+                delay={4}
+              />
+              <StatCard
+                title="Active Tasks"
+                value={stats.activeTasks}
+                subtitle="Currently in progress"
+                icon={Activity}
+                color="#22d3ee"
+                delay={5}
+              />
+              <StatCard
+                title="Completed"
+                value={stats.doneTasks}
+                subtitle="Tasks finished"
+                icon={CheckCircle}
+                color="#4ade80"
+                delay={6}
+              />
+            </section>
 
-        {/* Task Table */}
-        <section className="table-section">
-          <TaskTable data={data} />
-        </section>
+            {/* Charts Section */}
+            <section className="charts-section">
+              <div className="charts-row">
+                <PhaseChart data={chartData.phaseData} />
+                <TimelineChart data={chartData.monthlyData} />
+              </div>
+              <div className="charts-row-single">
+                <CrewChart data={chartData.crewData} />
+              </div>
+            </section>
+
+            {/* Task Table */}
+            <section className="table-section">
+              <TaskTable data={tableData} />
+            </section>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+            <p>No tasks found. {canAddJobs(role) && 'Click "Add Job" to create your first task.'}</p>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
       <footer className="footer">
-        <p>Blue Ox Enterprises, LLC • Schedule Management System</p>
+        <p>Blue Ox Enterprises, LLC • Schedule Management System • Logged in as {user?.email}</p>
       </footer>
+
+      {/* Job Modal */}
+      <JobModal
+        isOpen={jobModalOpen}
+        onClose={() => setJobModalOpen(false)}
+        onSave={handleSaveJob}
+        task={editingTask}
+        mode={editingTask ? 'edit' : 'add'}
+      />
     </div>
   );
 }
