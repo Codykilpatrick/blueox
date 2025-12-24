@@ -29,18 +29,17 @@ export function useAuth() {
         role: 'viewer' as UserRole,
         created_at: new Date().toISOString(),
       };
-      
+
       try {
         const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) => {
-          setTimeout(() => resolve({ data: null, error: new Error('Profile fetch timeout') }), 3000);
+          setTimeout(
+            () => resolve({ data: null, error: new Error('Profile fetch timeout') }),
+            3000
+          );
         });
-        
-        const fetchPromise = supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        
+
+        const fetchPromise = supabase.from('profiles').select('*').eq('id', userId).single();
+
         const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (error || !data) {
@@ -77,23 +76,23 @@ export function useAuth() {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        await handleAuthChange(session);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await handleAuthChange(session);
+    });
 
     const checkSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           if (mounted) {
-            setAuthState(prev => ({ ...prev, loading: false, error: error.message }));
+            setAuthState((prev) => ({ ...prev, loading: false, error: error.message }));
           }
           return;
         }
-        
+
         if (mounted && authState.loading) {
           await handleAuthChange(data.session);
         }

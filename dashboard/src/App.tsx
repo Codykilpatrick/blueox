@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Users, Calendar, Clock, CheckCircle, Activity, HardHat, LogOut, Plus, Shield } from 'lucide-react';
+import {
+  Briefcase,
+  Users,
+  Calendar,
+  Clock,
+  CheckCircle,
+  Activity,
+  HardHat,
+  LogOut,
+  Plus,
+  Shield,
+} from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
 import { canAddJobs, canEditJobs, canDeleteJobs } from './lib/supabase';
@@ -21,7 +32,7 @@ import './App.css';
 function computeStats(tasks: Task[]) {
   const uniqueJobs = new Set(tasks.map((d) => d.job).filter(Boolean));
   const uniqueCrews = new Set(tasks.map((d) => d.crew).filter((c) => c && c !== 'Unassigned'));
-  
+
   const statusCounts: Record<string, number> = {};
   const phaseCounts: Record<string, number> = {};
   const phaseDoneCounts: Record<string, number> = {};
@@ -34,7 +45,7 @@ function computeStats(tasks: Task[]) {
 
     const phase = task.sheet;
     phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
-    
+
     // Track done tasks per phase
     if (task.status === 'D') {
       phaseDoneCounts[phase] = (phaseDoneCounts[phase] || 0) + 1;
@@ -71,12 +82,14 @@ function computeStats(tasks: Task[]) {
   };
 }
 
-
 function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[]) {
-  const phaseData = Object.entries(stats.phaseCounts).map(([name, value]) => ({
-    name,
-    value,
-  } as { name: string; value: number; [key: string]: string | number }));
+  const phaseData = Object.entries(stats.phaseCounts).map(
+    ([name, value]) =>
+      ({
+        name,
+        value,
+      }) as { name: string; value: number; [key: string]: string | number }
+  );
 
   const crewData = Object.entries(stats.crewWorkload)
     .map(([name, weeks]) => ({
@@ -90,7 +103,10 @@ function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[])
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, count]) => ({
       month,
-      label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+      label: new Date(month + '-01').toLocaleDateString('en-US', {
+        month: 'short',
+        year: '2-digit',
+      }),
       count,
     }));
 
@@ -110,7 +126,7 @@ function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[])
   // Upcoming deadlines (tasks ending within 14 days that aren't done)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const upcomingTasks = tasks
     .filter((t) => t.end_date && t.status !== 'D')
     .map((t) => {
@@ -137,7 +153,7 @@ function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[])
 
   tasks.forEach((task) => {
     if (!task.daily_revenue || !task.start_date || !task.end_date) return;
-    
+
     const startDate = new Date(task.start_date);
     const endDate = new Date(task.end_date);
     const dailyRevenue = task.daily_revenue;
@@ -160,17 +176,44 @@ function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[])
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, revenue]) => ({
       month,
-      label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+      label: new Date(month + '-01').toLocaleDateString('en-US', {
+        month: 'short',
+        year: '2-digit',
+      }),
       revenue: Math.round(revenue * 100) / 100,
     }));
 
-  return { phaseData, crewData, monthlyData, phaseProgressData, upcomingTasks, revenueData, totalProjectedRevenue };
+  return {
+    phaseData,
+    crewData,
+    monthlyData,
+    phaseProgressData,
+    upcomingTasks,
+    revenueData,
+    totalProjectedRevenue,
+  };
 }
 
 function App() {
-  const { user, role, loading: authLoading, error: authError, signIn, signOut, isAuthenticated } = useAuth();
-  const { tasks, loading: tasksLoading, initialized, fetchTasks, addTask, updateTask, deleteTask } = useTasks();
-  
+  const {
+    user,
+    role,
+    loading: authLoading,
+    error: authError,
+    signIn,
+    signOut,
+    isAuthenticated,
+  } = useAuth();
+  const {
+    tasks,
+    loading: tasksLoading,
+    initialized,
+    fetchTasks,
+    addTask,
+    updateTask,
+    deleteTask,
+  } = useTasks();
+
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -183,23 +226,26 @@ function App() {
 
   // Show loading while checking auth
   if (authLoading) {
-    
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: '#0a0f1a',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '3px solid #1e3a5f',
-          borderTopColor: '#38bdf8',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          background: '#0a0f1a',
+        }}
+      >
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid #1e3a5f',
+            borderTopColor: '#38bdf8',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}
+        />
       </div>
     );
   }
@@ -254,9 +300,12 @@ function App() {
 
   const getRoleBadgeColor = () => {
     switch (role) {
-      case 'admin': return '#ef4444';
-      case 'editor': return '#f59e0b';
-      default: return '#6b7280';
+      case 'admin':
+        return '#ef4444';
+      case 'editor':
+        return '#f59e0b';
+      default:
+        return '#6b7280';
     }
   };
 
@@ -265,7 +314,7 @@ function App() {
       {/* Background effects */}
       <div className="bg-gradient" />
       <div className="bg-grid" />
-      
+
       {/* Header */}
       <header className="header">
         <div className="header-content">
@@ -298,16 +347,21 @@ function App() {
               <Shield size={14} />
               {role}
             </span>
-            
+
             <span className="update-badge">
               <Activity size={14} />
               Live Data
             </span>
-            
+
             <span className="date-display">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </span>
-            
+
             {/* Add Job Button (for editor/admin) */}
             {canAddJobs(role) && (
               <button
@@ -330,7 +384,7 @@ function App() {
                 Add Job
               </button>
             )}
-            
+
             <button
               onClick={signOut}
               style={{
@@ -363,16 +417,18 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
-        {(tasksLoading || !initialized) ? (
+        {tasksLoading || !initialized ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              border: '3px solid #1e3a5f',
-              borderTopColor: '#38bdf8',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }} />
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                border: '3px solid #1e3a5f',
+                borderTopColor: '#38bdf8',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }}
+            />
           </div>
         ) : stats && chartData ? (
           <>
@@ -436,18 +492,18 @@ function App() {
                 <ProgressChart data={chartData.phaseProgressData} />
                 <UpcomingDeadlines tasks={chartData.upcomingTasks} />
               </div>
-              
+
               {/* Row 2: Phase Pie Chart, Timeline */}
               <div className="charts-row">
                 <PhaseChart data={chartData.phaseData} />
                 <TimelineChart data={chartData.monthlyData} />
               </div>
-              
+
               {/* Row 3: Revenue Chart, Crew Workload */}
               <div className="charts-row">
-                <RevenueChart 
-                  data={chartData.revenueData} 
-                  totalProjected={chartData.totalProjectedRevenue} 
+                <RevenueChart
+                  data={chartData.revenueData}
+                  totalProjected={chartData.totalProjectedRevenue}
                 />
                 <CrewChart data={chartData.crewData} />
               </div>
@@ -455,12 +511,12 @@ function App() {
 
             {/* Task Table */}
             <section className="table-section">
-              <TaskTable 
-                data={tableData} 
+              <TaskTable
+                data={tableData}
                 canEdit={canEditJobs(role)}
                 canDelete={canDeleteJobs(role)}
                 onEdit={(id) => {
-                  const task = tasks.find(t => t.id === id);
+                  const task = tasks.find((t) => t.id === id);
                   if (task) handleEditJob(task);
                 }}
                 onDelete={handleDeleteJob}
@@ -469,7 +525,9 @@ function App() {
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-            <p>No tasks found. {canAddJobs(role) && 'Click "Add Job" to create your first task.'}</p>
+            <p>
+              No tasks found. {canAddJobs(role) && 'Click "Add Job" to create your first task.'}
+            </p>
           </div>
         )}
       </main>

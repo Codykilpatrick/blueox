@@ -70,13 +70,11 @@ export function useTasks() {
   const addTask = async (task: TaskInput): Promise<boolean> => {
     const { data: userData } = await supabase.auth.getUser();
     const cleanedData = cleanTaskData(task);
-    
-    const { error: insertError } = await supabase
-      .from('tasks')
-      .insert({
-        ...cleanedData,
-        created_by: userData.user?.id,
-      });
+
+    const { error: insertError } = await supabase.from('tasks').insert({
+      ...cleanedData,
+      created_by: userData.user?.id,
+    });
 
     if (insertError) {
       console.error('Error adding task:', insertError);
@@ -99,7 +97,7 @@ export function useTasks() {
         cleanedUpdates[key] = value ?? null;
       }
     }
-    
+
     const { error: updateError } = await supabase
       .from('tasks')
       .update({
@@ -120,10 +118,7 @@ export function useTasks() {
 
   // Delete a task
   const deleteTask = async (id: number): Promise<boolean> => {
-    const { error: deleteError } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
+    const { error: deleteError } = await supabase.from('tasks').delete().eq('id', id);
 
     if (deleteError) {
       console.error('Error deleting task:', deleteError);

@@ -25,7 +25,7 @@ const STATUSES = [
 export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [formData, setFormData] = useState<TaskInput>({
     sheet: 'Earthwork',
     job: '',
@@ -74,17 +74,17 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!formData.job.trim()) {
       setError('Job name is required');
       return;
     }
-    
+
     if (!formData.start_date) {
       setError('Start date is required');
       return;
     }
-    
+
     if (!formData.end_date) {
       setError('End date is required');
       return;
@@ -219,7 +219,9 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 style={inputStyle}
               >
                 {SHEETS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </div>
@@ -233,7 +235,9 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 style={inputStyle}
               >
                 {STATUSES.map((s) => (
-                  <option key={s.code} value={s.code}>{s.label}</option>
+                  <option key={s.code} value={s.code}>
+                    {s.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -257,7 +261,9 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 type="number"
                 step="0.1"
                 value={formData.weeks || ''}
-                onChange={(e) => setFormData({ ...formData, weeks: parseFloat(e.target.value) || undefined })}
+                onChange={(e) =>
+                  setFormData({ ...formData, weeks: parseFloat(e.target.value) || undefined })
+                }
                 placeholder="Duration in weeks"
                 style={inputStyle}
               />
@@ -270,7 +276,12 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 type="number"
                 step="0.01"
                 value={formData.daily_revenue || ''}
-                onChange={(e) => setFormData({ ...formData, daily_revenue: parseFloat(e.target.value) || undefined })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    daily_revenue: parseFloat(e.target.value) || undefined,
+                  })
+                }
                 placeholder="Revenue per day"
                 style={inputStyle}
               />
@@ -348,7 +359,9 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 alignItems: 'center',
                 gap: '8px',
                 padding: '12px 24px',
-                background: loading ? 'var(--bg-tertiary)' : 'linear-gradient(135deg, var(--accent-blue), var(--accent-violet))',
+                background: loading
+                  ? 'var(--bg-tertiary)'
+                  : 'linear-gradient(135deg, var(--accent-blue), var(--accent-violet))',
                 border: 'none',
                 borderRadius: '8px',
                 color: 'white',
@@ -366,4 +379,3 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
     </div>
   );
 }
-

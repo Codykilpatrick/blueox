@@ -25,7 +25,7 @@ export function useScheduleData() {
 
     const uniqueJobs = new Set(data.map((d) => d.job).filter(Boolean));
     const uniqueCrews = new Set(data.map((d) => d.crew).filter((c) => c && c !== 'Unassigned'));
-    
+
     const statusCounts: Record<string, number> = {};
     const phaseCounts: Record<string, number> = {};
     const crewWorkload: Record<string, number> = {};
@@ -78,10 +78,13 @@ export function useScheduleData() {
   const chartData = useMemo(() => {
     if (!stats) return null;
 
-    const phaseData = Object.entries(stats.phaseCounts).map(([name, value]) => ({
-      name,
-      value,
-    } as { name: string; value: number; [key: string]: string | number }));
+    const phaseData = Object.entries(stats.phaseCounts).map(
+      ([name, value]) =>
+        ({
+          name,
+          value,
+        }) as { name: string; value: number; [key: string]: string | number }
+    );
 
     const statusData = Object.entries(stats.statusCounts).map(([code, value]) => ({
       name: STATUS_LABELS[code] || code,
@@ -101,7 +104,10 @@ export function useScheduleData() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, count]) => ({
         month,
-        label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        label: new Date(month + '-01').toLocaleDateString('en-US', {
+          month: 'short',
+          year: '2-digit',
+        }),
         count,
       }));
 
@@ -110,4 +116,3 @@ export function useScheduleData() {
 
   return { data, loading, error, stats, chartData };
 }
-

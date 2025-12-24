@@ -6,10 +6,10 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   if (!status) return null;
-  
+
   const label = STATUS_LABELS[status] || status;
   const color = STATUS_COLORS[status] || '#64748b';
-  
+
   return (
     <span
       style={{
@@ -39,4 +39,3 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     </span>
   );
 }
-

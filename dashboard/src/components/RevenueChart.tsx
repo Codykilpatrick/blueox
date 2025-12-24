@@ -39,63 +39,75 @@ export function RevenueChart({ data, totalProjected }: RevenueChartProps) {
         height: '400px',
       }}
     >
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start',
-        marginBottom: '16px',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: '16px',
+        }}
+      >
         <div>
-          <h3 style={{ 
-            color: 'var(--text-primary)', 
-            fontSize: '1.125rem', 
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}>
+          <h3
+            style={{
+              color: 'var(--text-primary)',
+              fontSize: '1.125rem',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
             <DollarSign size={20} style={{ color: '#34d399' }} />
             Monthly Projected Revenue
           </h3>
-          <p style={{ 
-            color: 'var(--text-muted)', 
-            fontSize: '0.8125rem',
-            marginTop: '4px',
-          }}>
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.8125rem',
+              marginTop: '4px',
+            }}
+          >
             Based on daily revenue × working days per month
           </p>
         </div>
-        <div style={{
-          textAlign: 'right',
-        }}>
-          <div style={{ 
-            color: 'var(--text-muted)', 
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}>
+        <div
+          style={{
+            textAlign: 'right',
+          }}
+        >
+          <div
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
             Total Projected
           </div>
-          <div style={{ 
-            color: '#34d399', 
-            fontSize: '1.5rem',
-            fontWeight: 700,
-          }}>
+          <div
+            style={{
+              color: '#34d399',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+            }}
+          >
             {formatCurrency(totalProjected)}
           </div>
         </div>
       </div>
-      
+
       <ResponsiveContainer width="100%" height="80%">
         <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.5} />
-          <XAxis 
-            dataKey="label" 
+          <XAxis
+            dataKey="label"
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
             axisLine={{ stroke: 'var(--border-color)' }}
           />
-          <YAxis 
+          <YAxis
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
             axisLine={{ stroke: 'var(--border-color)' }}
@@ -112,11 +124,7 @@ export function RevenueChart({ data, totalProjected }: RevenueChartProps) {
             itemStyle={{ color: '#f8fafc' }}
             formatter={(value) => [formatCurrency(value as number), 'Revenue']}
           />
-          <Bar 
-            dataKey="revenue" 
-            fill="url(#revenueGradient)"
-            radius={[4, 4, 0, 0]}
-          />
+          <Bar dataKey="revenue" fill="url(#revenueGradient)" radius={[4, 4, 0, 0]} />
           <defs>
             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#34d399" stopOpacity={1} />
@@ -128,4 +136,3 @@ export function RevenueChart({ data, totalProjected }: RevenueChartProps) {
     </div>
   );
 }
-

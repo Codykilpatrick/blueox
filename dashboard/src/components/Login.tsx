@@ -28,7 +28,7 @@ export function Login({ onLogin, error: externalError, loading: externalLoading 
     }
 
     const success = await onLogin(email, password);
-    
+
     if (!success) {
       setIsLoading(false);
     }
@@ -61,7 +61,7 @@ export function Login({ onLogin, error: externalError, loading: externalLoading 
           pointerEvents: 'none',
         }}
       />
-      
+
       {/* Grid pattern */}
       <div
         style={{

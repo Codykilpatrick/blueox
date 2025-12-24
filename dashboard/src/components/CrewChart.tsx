@@ -1,4 +1,13 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  CartesianGrid,
+} from 'recharts';
 
 interface CrewData {
   name: string;
@@ -10,7 +19,18 @@ interface CrewChartProps {
 }
 
 const getBarColor = (index: number) => {
-  const colors = ['#34d399', '#38bdf8', '#a78bfa', '#fbbf24', '#fb7185', '#22d3ee', '#f472b6', '#4ade80', '#60a5fa', '#c084fc'];
+  const colors = [
+    '#34d399',
+    '#38bdf8',
+    '#a78bfa',
+    '#fbbf24',
+    '#fb7185',
+    '#22d3ee',
+    '#f472b6',
+    '#4ade80',
+    '#60a5fa',
+    '#c084fc',
+  ];
   return colors[index % colors.length];
 };
 
@@ -31,24 +51,30 @@ export function CrewChart({ data }: CrewChartProps) {
         height: '400px',
       }}
     >
-      <h3 style={{ 
-        color: 'var(--text-primary)', 
-        fontSize: '1.125rem', 
-        fontWeight: 600,
-        marginBottom: '16px',
-      }}>
+      <h3
+        style={{
+          color: 'var(--text-primary)',
+          fontSize: '1.125rem',
+          fontWeight: 600,
+          marginBottom: '16px',
+        }}
+      >
         Crew Workload (Weeks)
       </h3>
       <ResponsiveContainer width="100%" height="90%">
-        <BarChart data={data} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 0 }}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 10, right: 30, left: 80, bottom: 0 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
-          <XAxis 
+          <XAxis
             type="number"
             stroke="var(--text-muted)"
             tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
             axisLine={{ stroke: 'var(--border-color)' }}
           />
-          <YAxis 
+          <YAxis
             type="category"
             dataKey="name"
             stroke="var(--text-muted)"
@@ -77,4 +103,3 @@ export function CrewChart({ data }: CrewChartProps) {
     </div>
   );
 }
-

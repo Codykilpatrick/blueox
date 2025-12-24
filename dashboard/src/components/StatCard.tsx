@@ -39,28 +39,32 @@ export function StatCard({ title, value, subtitle, icon: Icon, color, delay = 0 
           pointerEvents: 'none',
         }}
       />
-      
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <p style={{ 
-            color: 'var(--text-muted)', 
-            fontSize: '0.875rem', 
-            fontWeight: 500,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: '8px'
-          }}>
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginBottom: '8px',
+            }}
+          >
             {title}
           </p>
-          <p style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: 700,
-            fontFamily: "'JetBrains Mono', monospace",
-            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            lineHeight: 1,
-          }}>
+          <p
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 700,
+              fontFamily: "'JetBrains Mono', monospace",
+              background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              lineHeight: 1,
+            }}
+          >
             {value}
           </p>
           {subtitle && (
@@ -83,4 +87,3 @@ export function StatCard({ title, value, subtitle, icon: Icon, color, delay = 0 
     </div>
   );
 }
-

@@ -71,7 +71,7 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
       if (typeof aVal === 'number' && typeof bVal === 'number') {
         return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
       }
-      
+
       const comparison = String(aVal).localeCompare(String(bVal));
       return sortDir === 'asc' ? comparison : -comparison;
     });
@@ -122,23 +122,51 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
         overflow: 'hidden',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}
+      >
         <h3 style={{ color: 'var(--text-primary)', fontSize: '1.125rem', fontWeight: 600 }}>
           All Tasks
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: 400, marginLeft: '12px' }}>
+          <span
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.875rem',
+              fontWeight: 400,
+              marginLeft: '12px',
+            }}
+          >
             ({filteredData.length} items)
           </span>
         </h3>
-        
+
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           {/* Search */}
           <div style={{ position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+              }}
+            />
             <input
               type="text"
               placeholder="Search jobs, crews..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
               style={{
                 background: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-color)',
@@ -154,10 +182,22 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
 
           {/* Phase Filter */}
           <div style={{ position: 'relative' }}>
-            <Filter size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Filter
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+              }}
+            />
             <select
               value={phaseFilter}
-              onChange={(e) => { setPhaseFilter(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setPhaseFilter(e.target.value);
+                setPage(0);
+              }}
               style={{
                 background: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-color)',
@@ -171,7 +211,9 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
             >
               <option value="all">All Phases</option>
               {phases.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
@@ -179,7 +221,10 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(0);
+            }}
             style={{
               background: 'var(--bg-tertiary)',
               border: '1px solid var(--border-color)',
@@ -193,7 +238,9 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
           >
             <option value="all">All Status</option>
             {statuses.map((s) => (
-              <option key={s} value={s!}>{s}</option>
+              <option key={s} value={s!}>
+                {s}
+              </option>
             ))}
           </select>
         </div>
@@ -204,13 +251,13 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-              <th 
+              <th
                 onClick={() => handleSort('job')}
-                style={{ 
-                  padding: '12px', 
-                  textAlign: 'left', 
-                  color: 'var(--text-muted)', 
-                  fontWeight: 500, 
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -222,17 +269,65 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                   Job <SortIcon column="job" />
                 </div>
               </th>
-              <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phase</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Crew</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
-              <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-              <th 
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Phase
+              </th>
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Crew
+              </th>
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Description
+              </th>
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Status
+              </th>
+              <th
                 onClick={() => handleSort('weeks')}
-                style={{ 
-                  padding: '12px', 
-                  textAlign: 'right', 
-                  color: 'var(--text-muted)', 
-                  fontWeight: 500, 
+                style={{
+                  padding: '12px',
+                  textAlign: 'right',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -240,18 +335,38 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                   whiteSpace: 'nowrap',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    justifyContent: 'flex-end',
+                  }}
+                >
                   Weeks <SortIcon column="weeks" />
                 </div>
               </th>
-              <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Daily Rev</th>
-              <th 
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'right',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Daily Rev
+              </th>
+              <th
                 onClick={() => handleSort('start')}
-                style={{ 
-                  padding: '12px', 
-                  textAlign: 'left', 
-                  color: 'var(--text-muted)', 
-                  fontWeight: 500, 
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
                   fontSize: '0.75rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -263,46 +378,124 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                   Start Date <SortIcon column="start" />
                 </div>
               </th>
-              <th style={{ padding: '12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>End Date</th>
+              <th
+                style={{
+                  padding: '12px',
+                  textAlign: 'left',
+                  color: 'var(--text-muted)',
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                End Date
+              </th>
               {(canEdit || canDelete) && (
-                <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
+                <th
+                  style={{
+                    padding: '12px',
+                    textAlign: 'center',
+                    color: 'var(--text-muted)',
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  Actions
+                </th>
               )}
             </tr>
           </thead>
           <tbody>
             {paginatedData.map((task, idx) => (
-              <tr 
+              <tr
                 key={idx}
-                style={{ 
+                style={{
                   borderBottom: '1px solid var(--border-color)',
                   transition: 'background 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 500, maxWidth: '200px' }}>
-                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: 'var(--text-primary)',
+                    fontWeight: 500,
+                    maxWidth: '200px',
+                  }}
+                >
+                  <div
+                    style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
                     {task.job || '—'}
                   </div>
                 </td>
-                <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{task.sheet}</td>
-                <td style={{ padding: '12px', color: task.crew === 'Unassigned' ? 'var(--text-muted)' : 'var(--accent-cyan)', fontWeight: 500, fontSize: '0.875rem' }}>
+                <td
+                  style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}
+                >
+                  {task.sheet}
+                </td>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: task.crew === 'Unassigned' ? 'var(--text-muted)' : 'var(--accent-cyan)',
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                  }}
+                >
                   {task.crew || '—'}
                 </td>
-                <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{task.description || '—'}</td>
+                <td
+                  style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem' }}
+                >
+                  {task.description || '—'}
+                </td>
                 <td style={{ padding: '12px' }}>
                   <StatusBadge status={task.status} />
                 </td>
-                <td style={{ padding: '12px', color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.875rem', textAlign: 'right' }}>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: 'var(--text-primary)',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.875rem',
+                    textAlign: 'right',
+                  }}
+                >
                   {task.weeks ? task.weeks.toFixed(1) : '—'}
                 </td>
-                <td style={{ padding: '12px', color: task.daily_revenue ? '#34d399' : 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.875rem', textAlign: 'right' }}>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: task.daily_revenue ? '#34d399' : 'var(--text-muted)',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.875rem',
+                    textAlign: 'right',
+                  }}
+                >
                   {task.daily_revenue ? `$${task.daily_revenue.toLocaleString()}` : '—'}
                 </td>
-                <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {formatDate(task.start)}
                 </td>
-                <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
+                <td
+                  style={{
+                    padding: '12px',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {formatDate(task.end)}
                 </td>
                 {(canEdit || canDelete) && (
@@ -357,7 +550,15 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '20px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px',
+            marginTop: '20px',
+          }}
+        >
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
@@ -396,4 +597,3 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
     </div>
   );
 }
-

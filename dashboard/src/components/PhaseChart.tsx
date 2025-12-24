@@ -23,12 +23,14 @@ export function PhaseChart({ data }: PhaseChartProps) {
         height: '400px',
       }}
     >
-      <h3 style={{ 
-        color: 'var(--text-primary)', 
-        fontSize: '1.125rem', 
-        fontWeight: 600,
-        marginBottom: '16px',
-      }}>
+      <h3
+        style={{
+          color: 'var(--text-primary)',
+          fontSize: '1.125rem',
+          fontWeight: 600,
+          marginBottom: '16px',
+        }}
+      >
         Tasks by Phase
       </h3>
       <ResponsiveContainer width="100%" height="90%">
@@ -43,8 +45,8 @@ export function PhaseChart({ data }: PhaseChartProps) {
             dataKey="value"
           >
             {data.map((_, index) => (
-              <Cell 
-                key={`cell-${index}`} 
+              <Cell
+                key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}
                 stroke="transparent"
               />
@@ -72,4 +74,3 @@ export function PhaseChart({ data }: PhaseChartProps) {
     </div>
   );
 }
-

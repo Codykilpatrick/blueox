@@ -39,12 +39,14 @@ export function StatusChart({ data }: StatusChartProps) {
         height: '400px',
       }}
     >
-      <h3 style={{ 
-        color: 'var(--text-primary)', 
-        fontSize: '1.125rem', 
-        fontWeight: 600,
-        marginBottom: '16px',
-      }}>
+      <h3
+        style={{
+          color: 'var(--text-primary)',
+          fontSize: '1.125rem',
+          fontWeight: 600,
+          marginBottom: '16px',
+        }}
+      >
         Status Distribution
       </h3>
       <ResponsiveContainer width="100%" height="90%">
@@ -59,11 +61,7 @@ export function StatusChart({ data }: StatusChartProps) {
             dataKey="value"
           >
             {chartData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={entry.color}
-                stroke="transparent"
-              />
+              <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
             ))}
           </Pie>
           <Tooltip
@@ -88,5 +86,3 @@ export function StatusChart({ data }: StatusChartProps) {
     </div>
   );
 }
-
-

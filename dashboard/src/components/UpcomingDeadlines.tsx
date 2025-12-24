@@ -45,26 +45,30 @@ export function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
         overflow: 'auto',
       }}
     >
-      <h3 style={{ 
-        color: 'var(--text-primary)', 
-        fontSize: '1.125rem', 
-        fontWeight: 600,
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-      }}>
+      <h3
+        style={{
+          color: 'var(--text-primary)',
+          fontSize: '1.125rem',
+          fontWeight: 600,
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
         <Clock size={20} style={{ color: 'var(--accent-amber)' }} />
         Upcoming Deadlines
       </h3>
-      
+
       {tasks.length === 0 ? (
-        <div style={{ 
-          color: 'var(--text-muted)', 
-          textAlign: 'center', 
-          padding: '40px 20px',
-          fontSize: '0.9375rem',
-        }}>
+        <div
+          style={{
+            color: 'var(--text-muted)',
+            textAlign: 'center',
+            padding: '40px 20px',
+            fontSize: '0.9375rem',
+          }}
+        >
           No upcoming deadlines in the next 14 days
         </div>
       ) : (
@@ -88,34 +92,40 @@ export function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
                   <AlertCircle size={18} style={{ color: urgencyColor, flexShrink: 0 }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ 
-                    color: 'var(--text-primary)', 
-                    fontSize: '0.9375rem',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
+                  <div
+                    style={{
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9375rem',
+                      fontWeight: 500,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
                     {task.job}
                   </div>
-                  <div style={{ 
-                    color: 'var(--text-muted)', 
-                    fontSize: '0.8125rem',
-                    marginTop: '2px',
-                  }}>
+                  <div
+                    style={{
+                      color: 'var(--text-muted)',
+                      fontSize: '0.8125rem',
+                      marginTop: '2px',
+                    }}
+                  >
                     {task.phase} {task.crew && `• ${task.crew}`}
                   </div>
                 </div>
-                <div style={{
-                  padding: '4px 10px',
-                  background: `${urgencyColor}20`,
-                  border: `1px solid ${urgencyColor}40`,
-                  borderRadius: '12px',
-                  color: urgencyColor,
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                }}>
+                <div
+                  style={{
+                    padding: '4px 10px',
+                    background: `${urgencyColor}20`,
+                    border: `1px solid ${urgencyColor}40`,
+                    borderRadius: '12px',
+                    color: urgencyColor,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {getUrgencyLabel(task.daysLeft)}
                 </div>
               </div>
@@ -126,5 +136,3 @@ export function UpcomingDeadlines({ tasks }: UpcomingDeadlinesProps) {
     </div>
   );
 }
-
-
