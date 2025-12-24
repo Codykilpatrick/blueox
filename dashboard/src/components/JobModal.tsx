@@ -36,6 +36,7 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
     weeks: undefined,
     start_date: '',
     end_date: '',
+    daily_revenue: undefined,
   });
 
   // Populate form when editing
@@ -51,6 +52,7 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
         weeks: task.weeks || undefined,
         start_date: task.start_date ? task.start_date.split('T')[0] : '',
         end_date: task.end_date ? task.end_date.split('T')[0] : '',
+        daily_revenue: task.daily_revenue || undefined,
       });
     } else {
       // Reset form for new task
@@ -64,6 +66,7 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
         weeks: undefined,
         start_date: '',
         end_date: '',
+        daily_revenue: undefined,
       });
     }
   }, [task, mode, isOpen]);
@@ -256,6 +259,19 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
                 value={formData.weeks || ''}
                 onChange={(e) => setFormData({ ...formData, weeks: parseFloat(e.target.value) || undefined })}
                 placeholder="Duration in weeks"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Daily Revenue */}
+            <div>
+              <label style={labelStyle}>Daily Revenue ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.daily_revenue || ''}
+                onChange={(e) => setFormData({ ...formData, daily_revenue: parseFloat(e.target.value) || undefined })}
+                placeholder="Revenue per day"
                 style={inputStyle}
               />
             </div>

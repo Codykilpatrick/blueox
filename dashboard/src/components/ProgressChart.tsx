@@ -92,3 +92,4 @@ export function ProgressChart({ data }: ProgressChartProps) {
   );
 }
 
+

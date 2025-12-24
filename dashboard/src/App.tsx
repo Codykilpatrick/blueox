@@ -11,6 +11,7 @@ import { CrewChart } from './components/CrewChart';
 import { StatusChart } from './components/StatusChart';
 import { ProgressChart } from './components/ProgressChart';
 import { UpcomingDeadlines } from './components/UpcomingDeadlines';
+import { RevenueChart } from './components/RevenueChart';
 import { TaskTable } from './components/TaskTable';
 import { Login } from './components/Login';
 import { JobModal } from './components/JobModal';
@@ -52,6 +53,7 @@ function computeStats(tasks: Task[]) {
   const totalWeeks = tasks.reduce((sum, t) => sum + (t.weeks || 0), 0);
   const activeTasks = tasks.filter((t) => t.status === 'A').length;
   const doneTasks = tasks.filter((t) => t.status === 'D').length;
+  const tasksWithRevenue = tasks.filter((t) => t.daily_revenue && t.daily_revenue > 0).length;
 
   return {
     totalTasks: tasks.length,
@@ -60,6 +62,7 @@ function computeStats(tasks: Task[]) {
     totalWeeks: Math.round(totalWeeks),
     activeTasks,
     doneTasks,
+    tasksWithRevenue,
     statusCounts,
     phaseCounts,
     phaseDoneCounts,
@@ -127,7 +130,41 @@ function computeChartData(stats: ReturnType<typeof computeStats>, tasks: Task[])
     .sort((a, b) => a.daysLeft - b.daysLeft)
     .slice(0, 8);
 
-  return { phaseData, crewData, monthlyData, phaseProgressData, upcomingTasks };
+  // Monthly revenue calculation
+  // For each task with daily_revenue, calculate revenue per month based on working days
+  const monthlyRevenue: Record<string, number> = {};
+  let totalProjectedRevenue = 0;
+
+  tasks.forEach((task) => {
+    if (!task.daily_revenue || !task.start_date || !task.end_date) return;
+    
+    const startDate = new Date(task.start_date);
+    const endDate = new Date(task.end_date);
+    const dailyRevenue = task.daily_revenue;
+
+    // Iterate through each day of the task
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      // Only count weekdays (Mon-Fri)
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const monthKey = currentDate.toISOString().slice(0, 7);
+        monthlyRevenue[monthKey] = (monthlyRevenue[monthKey] || 0) + dailyRevenue;
+        totalProjectedRevenue += dailyRevenue;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  });
+
+  const revenueData = Object.entries(monthlyRevenue)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, revenue]) => ({
+      month,
+      label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+      revenue: Math.round(revenue * 100) / 100,
+    }));
+
+  return { phaseData, crewData, monthlyData, phaseProgressData, upcomingTasks, revenueData, totalProjectedRevenue };
 }
 
 function App() {
@@ -212,6 +249,7 @@ function App() {
     weeks: t.weeks,
     start: t.start_date,
     end: t.end_date,
+    daily_revenue: t.daily_revenue,
   }));
 
   const getRoleBadgeColor = () => {
@@ -405,8 +443,12 @@ function App() {
                 <TimelineChart data={chartData.monthlyData} />
               </div>
               
-              {/* Row 3: Crew Workload */}
-              <div className="charts-row-single">
+              {/* Row 3: Revenue Chart, Crew Workload */}
+              <div className="charts-row">
+                <RevenueChart 
+                  data={chartData.revenueData} 
+                  totalProjected={chartData.totalProjectedRevenue} 
+                />
                 <CrewChart data={chartData.crewData} />
               </div>
             </section>

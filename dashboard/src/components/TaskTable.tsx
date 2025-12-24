@@ -5,6 +5,7 @@ import { StatusBadge } from './StatusBadge';
 
 interface ExtendedTaskRecord extends TaskRecord {
   id?: number;
+  daily_revenue?: number | null;
 }
 
 interface TaskTableProps {
@@ -243,6 +244,7 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                   Weeks <SortIcon column="weeks" />
                 </div>
               </th>
+              <th style={{ padding: '12px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Daily Rev</th>
               <th 
                 onClick={() => handleSort('start')}
                 style={{ 
@@ -293,6 +295,9 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                 </td>
                 <td style={{ padding: '12px', color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.875rem', textAlign: 'right' }}>
                   {task.weeks ? task.weeks.toFixed(1) : '—'}
+                </td>
+                <td style={{ padding: '12px', color: task.daily_revenue ? '#34d399' : 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.875rem', textAlign: 'right' }}>
+                  {task.daily_revenue ? `$${task.daily_revenue.toLocaleString()}` : '—'}
                 </td>
                 <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>
                   {formatDate(task.start)}

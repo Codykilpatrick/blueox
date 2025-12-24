@@ -11,6 +11,7 @@ export interface TaskInput {
   weeks?: number;
   start_date?: string;
   end_date?: string;
+  daily_revenue?: number;
 }
 
 // Helper to clean task data - convert empty strings to null for database
@@ -25,6 +26,7 @@ function cleanTaskData(task: TaskInput): Record<string, unknown> {
     weeks: task.weeks || null,
     start_date: task.start_date?.trim() || null,
     end_date: task.end_date?.trim() || null,
+    daily_revenue: task.daily_revenue || null,
   };
 }
 

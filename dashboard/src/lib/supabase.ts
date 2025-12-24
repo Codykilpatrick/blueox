@@ -29,6 +29,7 @@ export interface Task {
   weeks: number | null;
   start_date: string | null;
   end_date: string | null;
+  daily_revenue: number | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
