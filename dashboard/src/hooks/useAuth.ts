@@ -21,6 +21,7 @@ export function useAuth() {
 
   useEffect(() => {
     let mounted = true;
+    const hasInitialized = { current: false };
 
     const fetchProfile = async (userId: string): Promise<Profile> => {
       const defaultProfile: Profile = {
@@ -93,7 +94,8 @@ export function useAuth() {
           return;
         }
 
-        if (mounted && authState.loading) {
+        if (mounted && !hasInitialized.current) {
+          hasInitialized.current = true;
           await handleAuthChange(data.session);
         }
       } catch {

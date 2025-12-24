@@ -16,7 +16,7 @@ interface StatusChartProps {
 
 export function StatusChart({ data }: StatusChartProps) {
   const chartData = Object.entries(data)
-    .filter(([_, count]) => count > 0)
+    .filter((entry) => entry[1] > 0)
     .map(([status, count]) => ({
       name: STATUS_CONFIG[status]?.label || status,
       value: count,

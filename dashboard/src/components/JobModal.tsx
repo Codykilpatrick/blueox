@@ -39,10 +39,10 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
     daily_revenue: undefined,
   });
 
-  // Populate form when editing
-  useEffect(() => {
+  // Populate form when editing - compute initial form data based on props
+  const computeFormData = (): TaskInput => {
     if (task && mode === 'edit') {
-      setFormData({
+      return {
         sheet: task.sheet || 'Earthwork',
         job: task.job || '',
         phase: task.phase || '',
@@ -53,23 +53,28 @@ export function JobModal({ isOpen, onClose, onSave, task, mode }: JobModalProps)
         start_date: task.start_date ? task.start_date.split('T')[0] : '',
         end_date: task.end_date ? task.end_date.split('T')[0] : '',
         daily_revenue: task.daily_revenue || undefined,
-      });
-    } else {
-      // Reset form for new task
-      setFormData({
-        sheet: 'Earthwork',
-        job: '',
-        phase: '',
-        crew: '',
-        description: '',
-        status: 'S',
-        weeks: undefined,
-        start_date: '',
-        end_date: '',
-        daily_revenue: undefined,
-      });
+      };
     }
-  }, [task, mode, isOpen]);
+    return {
+      sheet: 'Earthwork',
+      job: '',
+      phase: '',
+      crew: '',
+      description: '',
+      status: 'S',
+      weeks: undefined,
+      start_date: '',
+      end_date: '',
+      daily_revenue: undefined,
+    };
+  };
+
+  // Reset form when modal opens or task/mode changes
+  const formKey = `${isOpen}-${mode}-${task?.id ?? 'new'}`;
+  useEffect(() => {
+    setFormData(computeFormData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formKey]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

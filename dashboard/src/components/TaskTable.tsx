@@ -3,6 +3,20 @@ import { Search, Filter, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-r
 import type { TaskRecord } from '../types';
 import { StatusBadge } from './StatusBadge';
 
+// Sort icon component - defined outside to avoid recreation on each render
+function SortIcon({
+  column,
+  sortBy,
+  sortDir,
+}: {
+  column: 'start' | 'weeks' | 'job';
+  sortBy: 'start' | 'weeks' | 'job';
+  sortDir: 'asc' | 'desc';
+}) {
+  if (sortBy !== column) return null;
+  return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+}
+
 interface ExtendedTaskRecord extends TaskRecord {
   id?: number;
   daily_revenue?: number | null;
@@ -93,11 +107,6 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
       setSortBy(column);
       setSortDir('desc');
     }
-  };
-
-  const SortIcon = ({ column }: { column: 'start' | 'weeks' | 'job' }) => {
-    if (sortBy !== column) return null;
-    return sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
   };
 
   const formatDate = (dateStr: string | null) => {
@@ -266,7 +275,7 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Job <SortIcon column="job" />
+                  Job <SortIcon column="job" sortBy={sortBy} sortDir={sortDir} />
                 </div>
               </th>
               <th
@@ -343,7 +352,7 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                     justifyContent: 'flex-end',
                   }}
                 >
-                  Weeks <SortIcon column="weeks" />
+                  Weeks <SortIcon column="weeks" sortBy={sortBy} sortDir={sortDir} />
                 </div>
               </th>
               <th
@@ -375,7 +384,7 @@ export function TaskTable({ data, canEdit, canDelete, onEdit, onDelete }: TaskTa
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Start Date <SortIcon column="start" />
+                  Start Date <SortIcon column="start" sortBy={sortBy} sortDir={sortDir} />
                 </div>
               </th>
               <th
