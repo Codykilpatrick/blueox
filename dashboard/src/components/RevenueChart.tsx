@@ -110,7 +110,7 @@ export function RevenueChart({ data, totalProjected }: RevenueChartProps) {
             }}
             labelStyle={{ color: '#f8fafc' }}
             itemStyle={{ color: '#f8fafc' }}
-            formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+            formatter={(value) => [formatCurrency(value as number), 'Revenue']}
           />
           <Bar 
             dataKey="revenue" 
