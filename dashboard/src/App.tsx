@@ -201,6 +201,7 @@ function App() {
     user,
     role,
     loading: authLoading,
+    initialized: authInitialized,
     error: authError,
     signIn,
     signOut,
@@ -214,18 +215,18 @@ function App() {
     addTask,
     updateTask,
     deleteTask,
-  } = useTasks();
+  } = useTasks(isAuthenticated);
 
   const [jobModalOpen, setJobModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Fetch tasks on mount (for everyone - view mode)
+  // Fetch tasks once auth is initialized (works for both authenticated and anonymous users)
   useEffect(() => {
-    if (!tasksInitialized) {
+    if (authInitialized) {
       fetchTasks();
     }
-  }, [tasksInitialized, fetchTasks]);
+  }, [authInitialized, isAuthenticated, fetchTasks]);
 
   // Get the effective role for permission checks (null for anonymous users)
   const effectiveRole: UserRole | null = role;

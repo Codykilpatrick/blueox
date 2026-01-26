@@ -64,14 +64,14 @@ function convertStaticToTask(record: StaticTaskRecord, index: number): Task {
   };
 }
 
-export function useTasks() {
+export function useTasks(isAuthenticated: boolean = false) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
 
-  // Fetch tasks from static JSON (fallback for unauthenticated users)
+  // Fetch tasks from static JSON (for unauthenticated users / demo mode)
   const fetchStaticTasks = useCallback(async (): Promise<Task[]> => {
     try {
       const response = await fetch('/schedule_data.json');
@@ -83,43 +83,53 @@ export function useTasks() {
     }
   }, []);
 
-  // Fetch all tasks - tries Supabase first, falls back to static JSON
-  const fetchTasks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
+  // Fetch all tasks from Supabase (for authenticated users)
+  const fetchSupabaseTasks = useCallback(async (): Promise<Task[] | null> => {
     try {
-      // First, try to fetch from Supabase
       const { data, error: fetchError } = await supabase
         .from('tasks')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        console.log('Supabase fetch failed, falling back to static data:', fetchError.message);
-        // Fall back to static JSON for view-only mode
+        console.error('Supabase fetch error:', fetchError.message);
+        return null;
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Exception fetching from Supabase:', err);
+      return null;
+    }
+  }, []);
+
+  // Fetch tasks based on authentication state
+  const fetchTasks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    if (isAuthenticated) {
+      // Authenticated users: fetch from Supabase
+      const supabaseTasks = await fetchSupabaseTasks();
+      if (supabaseTasks !== null) {
+        setTasks(supabaseTasks);
+        setIsReadOnly(false);
+      } else {
+        // Fallback to static if Supabase fails
         const staticTasks = await fetchStaticTasks();
         setTasks(staticTasks);
         setIsReadOnly(true);
-        setLoading(false);
-        setInitialized(true);
-        return;
       }
-
-      setTasks(data || []);
-      setIsReadOnly(false);
-      setLoading(false);
-      setInitialized(true);
-    } catch (err) {
-      console.error('Exception fetching tasks:', err);
-      // Fall back to static JSON
+    } else {
+      // Unauthenticated users: always use static JSON (demo mode)
       const staticTasks = await fetchStaticTasks();
       setTasks(staticTasks);
       setIsReadOnly(true);
-      setLoading(false);
-      setInitialized(true);
     }
-  }, [fetchStaticTasks]);
+
+    setLoading(false);
+    setInitialized(true);
+  }, [isAuthenticated, fetchStaticTasks, fetchSupabaseTasks]);
 
   // Add a new task (requires authentication)
   const addTask = async (task: TaskInput): Promise<boolean> => {
