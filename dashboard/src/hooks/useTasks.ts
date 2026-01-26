@@ -66,14 +66,20 @@ export function useTasks() {
     }
   }, []);
 
-  // Add a new task
+  // Add a new task (requires authentication)
   const addTask = async (task: TaskInput): Promise<boolean> => {
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !userData.user) {
+      setError('You must be logged in to add tasks');
+      return false;
+    }
+    
     const cleanedData = cleanTaskData(task);
 
     const { error: insertError } = await supabase.from('tasks').insert({
       ...cleanedData,
-      created_by: userData.user?.id,
+      created_by: userData.user.id,
     });
 
     if (insertError) {

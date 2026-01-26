@@ -7,6 +7,7 @@ interface AuthState {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  initialized: boolean;
   error: string | null;
 }
 
@@ -15,7 +16,8 @@ export function useAuth() {
     user: null,
     profile: null,
     session: null,
-    loading: true,
+    loading: false,
+    initialized: false,
     error: null,
   });
 
@@ -61,6 +63,7 @@ export function useAuth() {
             profile,
             session,
             loading: false,
+            initialized: true,
             error: null,
           });
         }
@@ -71,6 +74,7 @@ export function useAuth() {
             profile: null,
             session: null,
             loading: false,
+            initialized: true,
             error: null,
           });
         }
@@ -89,7 +93,7 @@ export function useAuth() {
 
         if (error) {
           if (mounted) {
-            setAuthState((prev) => ({ ...prev, loading: false, error: error.message }));
+            setAuthState((prev) => ({ ...prev, loading: false, initialized: true, error: error.message }));
           }
           return;
         }
@@ -105,6 +109,7 @@ export function useAuth() {
             profile: null,
             session: null,
             loading: false,
+            initialized: true,
             error: null,
           });
         }
@@ -160,17 +165,21 @@ export function useAuth() {
       profile: null,
       session: null,
       loading: false,
+      initialized: true,
       error: null,
     });
   };
 
-  const role: UserRole = authState.profile?.role || 'viewer';
+  // For unauthenticated users, role is null (not 'viewer')
+  // This distinguishes between logged-in viewers and anonymous users
+  const role: UserRole | null = authState.user ? (authState.profile?.role || 'viewer') : null;
 
   return {
     user: authState.user,
     profile: authState.profile,
     session: authState.session,
     loading: authState.loading,
+    initialized: authState.initialized,
     error: authState.error,
     role,
     signIn,

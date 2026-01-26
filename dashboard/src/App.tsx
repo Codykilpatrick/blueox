@@ -8,13 +8,15 @@ import {
   Activity,
   HardHat,
   LogOut,
+  LogIn,
   Plus,
   Shield,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
 import { canAddJobs, canEditJobs, canDeleteJobs } from './lib/supabase';
-import type { Task } from './lib/supabase';
+import type { Task, UserRole } from './lib/supabase';
 import { StatCard } from './components/StatCard';
 import { PhaseChart } from './components/PhaseChart';
 import { TimelineChart } from './components/TimelineChart';
@@ -24,7 +26,7 @@ import { ProgressChart } from './components/ProgressChart';
 import { UpcomingDeadlines } from './components/UpcomingDeadlines';
 import { RevenueChart } from './components/RevenueChart';
 import { TaskTable } from './components/TaskTable';
-import { Login } from './components/Login';
+import { LoginModal } from './components/LoginModal';
 import { JobModal } from './components/JobModal';
 import './App.css';
 
@@ -207,7 +209,7 @@ function App() {
   const {
     tasks,
     loading: tasksLoading,
-    initialized,
+    initialized: tasksInitialized,
     fetchTasks,
     addTask,
     updateTask,
@@ -215,45 +217,27 @@ function App() {
   } = useTasks();
 
   const [jobModalOpen, setJobModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Fetch tasks when authenticated
+  // Fetch tasks on mount (for everyone - view mode)
   useEffect(() => {
-    if (isAuthenticated && !initialized) {
+    if (!tasksInitialized) {
       fetchTasks();
     }
-  }, [isAuthenticated, initialized, fetchTasks]);
+  }, [tasksInitialized, fetchTasks]);
 
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          background: '#0a0f1a',
-        }}
-      >
-        <div
-          style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid #1e3a5f',
-            borderTopColor: '#38bdf8',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}
-        />
-      </div>
-    );
-  }
+  // Get the effective role for permission checks (null for anonymous users)
+  const effectiveRole: UserRole | null = role;
 
-  // Show login if not authenticated
-  if (!isAuthenticated) {
-    return <Login onLogin={signIn} error={authError} />;
-  }
+  // Wrapper for signIn that closes the modal on success
+  const handleSignIn = async (email: string, password: string): Promise<boolean> => {
+    const success = await signIn(email, password);
+    if (success) {
+      setLoginModalOpen(false);
+    }
+    return success;
+  };
 
   // Compute stats and chart data from tasks
   const stats = tasks.length > 0 ? computeStats(tasks) : null;
@@ -299,7 +283,8 @@ function App() {
   }));
 
   const getRoleBadgeColor = () => {
-    switch (role) {
+    if (!effectiveRole) return '#6b7280'; // View-only (not logged in)
+    switch (effectiveRole) {
       case 'admin':
         return '#ef4444';
       case 'editor':
@@ -307,6 +292,11 @@ function App() {
       default:
         return '#6b7280';
     }
+  };
+
+  const getRoleLabel = () => {
+    if (!effectiveRole) return 'View Only';
+    return effectiveRole;
   };
 
   return (
@@ -344,8 +334,8 @@ function App() {
                 textTransform: 'uppercase',
               }}
             >
-              <Shield size={14} />
-              {role}
+              {effectiveRole ? <Shield size={14} /> : <Eye size={14} />}
+              {getRoleLabel()}
             </span>
 
             <span className="update-badge">
@@ -363,7 +353,7 @@ function App() {
             </span>
 
             {/* Add Job Button (for editor/admin) */}
-            {canAddJobs(role) && (
+            {effectiveRole && canAddJobs(effectiveRole) && (
               <button
                 onClick={handleAddJob}
                 style={{
@@ -385,39 +375,69 @@ function App() {
               </button>
             )}
 
-            <button
-              onClick={signOut}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                color: '#ef4444',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-              }}
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
+            {/* Login/Logout Button */}
+            {isAuthenticated ? (
+              <button
+                onClick={signOut}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '8px',
+                  color: '#ef4444',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                }}
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => setLoginModalOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-violet))',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <LogIn size={16} />
+                Login
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="main-content">
-        {tasksLoading || !initialized ? (
+        {tasksLoading || !tasksInitialized ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
             <div
               style={{
@@ -513,8 +533,8 @@ function App() {
             <section className="table-section">
               <TaskTable
                 data={tableData}
-                canEdit={canEditJobs(role)}
-                canDelete={canDeleteJobs(role)}
+                canEdit={effectiveRole ? canEditJobs(effectiveRole) : false}
+                canDelete={effectiveRole ? canDeleteJobs(effectiveRole) : false}
                 onEdit={(id) => {
                   const task = tasks.find((t) => t.id === id);
                   if (task) handleEditJob(task);
@@ -526,7 +546,25 @@ function App() {
         ) : (
           <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
             <p>
-              No tasks found. {canAddJobs(role) && 'Click "Add Job" to create your first task.'}
+              No tasks found.{' '}
+              {effectiveRole &&
+                canAddJobs(effectiveRole) &&
+                'Click "Add Job" to create your first task.'}
+              {!isAuthenticated && (
+                <button
+                  onClick={() => setLoginModalOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--accent-blue)',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    fontSize: 'inherit',
+                  }}
+                >
+                  Login to add tasks.
+                </button>
+              )}
             </p>
           </div>
         )}
@@ -534,7 +572,10 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <p>Blue Ox Enterprises, LLC • Schedule Management System • Logged in as {user?.email}</p>
+        <p>
+          Blue Ox Enterprises, LLC • Schedule Management System
+          {isAuthenticated && user?.email ? ` • Logged in as ${user.email}` : ' • View Only Mode'}
+        </p>
       </footer>
 
       {/* Job Modal */}
@@ -544,6 +585,15 @@ function App() {
         onSave={handleSaveJob}
         task={editingTask}
         mode={editingTask ? 'edit' : 'add'}
+      />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onLogin={handleSignIn}
+        error={authError}
+        loading={authLoading}
       />
     </div>
   );
